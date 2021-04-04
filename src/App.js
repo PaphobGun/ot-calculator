@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Typography,
   DatePicker,
@@ -18,6 +18,7 @@ const certificate = 7000;
 
 const initialValues = {
   salary: 25000,
+  publicHoliday: 0,
 };
 
 const getOTIncome = (salary, OTHour) => {
@@ -52,6 +53,10 @@ const calculateHourAndOT = (num, mode) => {
   return [workingHours, OTHours];
 };
 
+const getOrZero = (num) => {
+  return !num ? 0 : num;
+};
+
 const App = () => {
   const [form] = Form.useForm();
 
@@ -60,21 +65,32 @@ const App = () => {
   const [totalHour, setTotalHour] = useState(0);
   const [OTIncome, setOTIncome] = useState(0);
   const [totalIncome, setTotalIncome] = useState(0);
+  const [dutyHours, setDutyHours] = useState(0);
+  const [salary, setSalary] = useState(initialValues.salary);
+  const [publicHoliday, setPublicHoliday] = useState(
+    initialValues.publicHoliday
+  );
+  const [formValues, setFormValues] = useState({});
+
+  const onChangeSalary = (salaryInput) => {
+    setSalary(!salaryInput ? 0 : salaryInput);
+  };
+
+  const onChagePublicHoliday = (pub) => {
+    setPublicHoliday(!pub ? 0 : pub);
+  };
 
   useEffect(() => {
-    setOTIncome(getOTIncome(form.getFieldValue('salary'), otHour));
-  }, [form, otHour]);
+    setTotalIncome(certificate + OTIncome + salary);
+  }, [OTIncome, salary]);
 
   useEffect(() => {
-    setTotalIncome(certificate + OTIncome + form.getFieldValue('salary'));
-  }, [OTIncome, form]);
+    setDutyHours((businessDays - getOrZero(publicHoliday)) * 8);
+  }, [businessDays, publicHoliday]);
 
-  const dutyHours = useMemo(() => {
-    // TODO:  ADD PUBLIC HOLIDAY IN THE GIVEN MONTH
-    // return (businessDays - numOfPublicHoidays) * 8;
-
-    return businessDays * 8;
-  }, [businessDays]);
+  useEffect(() => {
+    setOTIncome(getOTIncome(salary, otHour));
+  }, [dutyHours, salary, otHour]);
 
   const onChangeMonth = (momentObj) => {
     if (!momentObj) return;
@@ -86,7 +102,14 @@ const App = () => {
     setBusinessDays(numOfBusinessDays);
   };
 
-  const onChangeDays = () => {
+  const onChangeDay = (num, name) => {
+    setFormValues((prev) => ({
+      ...prev,
+      [name]: num,
+    }));
+  };
+
+  useEffect(() => {
     const {
       n7am,
       n8am,
@@ -96,7 +119,9 @@ const App = () => {
       ot9am,
       nightShift,
       extra,
-    } = form.getFieldsValue(true);
+    } = formValues;
+
+    console.log(formValues);
 
     const [w7amHour] = calculateHourAndOT(n7am, 'day');
     const [w8amHour] = calculateHourAndOT(n8am, 'day');
@@ -107,20 +132,25 @@ const App = () => {
     const [nightHour, nightOT] = calculateHourAndOT(nightShift, 'night');
     const [extraHour, extraOT] = calculateHourAndOT(extra, 'extra');
 
-    setTotalHour(
+    const totalHours =
       w7amHour +
-        w8amHour +
-        w9amHour +
-        w7amOTHour +
-        w8amOTHour +
-        w9amOTHour +
-        nightHour +
-        extraHour +
-        extraOT
-    );
+      w8amHour +
+      w9amHour +
+      w7amOTHour +
+      ot7amHour +
+      w8amOTHour +
+      ot8amHour +
+      w9amOTHour +
+      ot9amHour +
+      nightHour +
+      nightOT +
+      extraHour +
+      extraOT;
 
-    setOtHour(ot7amHour + ot8amHour + ot9amHour + nightOT + extraOT);
-  };
+    setTotalHour(totalHours);
+
+    setOtHour(totalHours - dutyHours);
+  }, [formValues, dutyHours]);
 
   return (
     <Wrapper>
@@ -155,53 +185,92 @@ const App = () => {
                 </Col>
                 <Col span={12}>
                   <Form.Item label="Salary (THB)" name="salary">
-                    <StyledInputNumber min={0} />
+                    <StyledInputNumber min={0} onChange={onChangeSalary} />
                   </Form.Item>
                 </Col>
               </Row>
               <Row gutter={8}>
                 <Col span={8}>
                   <Form.Item label="7-16" name="n7am">
-                    <StyledInputNumber min={0} onChange={onChangeDays} />
+                    <StyledInputNumber
+                      min={0}
+                      onChange={(num) => onChangeDay(num, 'n7am')}
+                    />
                   </Form.Item>
                 </Col>
                 <Col span={8}>
                   <Form.Item label="8-17" name="n8am">
-                    <StyledInputNumber min={0} onChange={onChangeDays} />
+                    <StyledInputNumber
+                      min={0}
+                      onChange={(num) => onChangeDay(num, 'n8am')}
+                    />
                   </Form.Item>
                 </Col>
                 <Col span={8}>
                   <Form.Item label="9-18" name="n9am">
-                    <StyledInputNumber min={0} onChange={onChangeDays} />
+                    <StyledInputNumber
+                      min={0}
+                      onChange={(num) => onChangeDay(num, 'n9am')}
+                    />
                   </Form.Item>
                 </Col>
               </Row>
               <Row gutter={8}>
                 <Col span={8}>
                   <Form.Item label="7-19" name="ot7am">
-                    <StyledInputNumber min={0} onChange={onChangeDays} />
+                    <StyledInputNumber
+                      min={0}
+                      onChange={(num) => onChangeDay(num, 'ot7am')}
+                    />
                   </Form.Item>
                 </Col>
                 <Col span={8}>
                   <Form.Item label="8-20" name="ot8am">
-                    <StyledInputNumber min={0} onChange={onChangeDays} />
+                    <StyledInputNumber
+                      min={0}
+                      onChange={(num) => onChangeDay(num, 'ot8am')}
+                    />
                   </Form.Item>
                 </Col>
                 <Col span={8}>
                   <Form.Item label="9-21" name="ot9am">
-                    <StyledInputNumber min={0} onChange={onChangeDays} />
+                    <StyledInputNumber
+                      min={0}
+                      onChange={(num) => onChangeDay(num, 'ot9am')}
+                    />
                   </Form.Item>
                 </Col>
               </Row>
               <Row gutter={8}>
-                <Col span={12}>
-                  <Form.Item label="Night Shift (Days)" name="nightShift">
-                    <StyledInputNumber min={0} onChange={onChangeDays} />
+                <Col span={8}>
+                  <Form.Item label="Night Shift" name="nightShift">
+                    <StyledInputNumber
+                      min={0}
+                      onChange={(num) => onChangeDay(num, 'nightShift')}
+                    />
                   </Form.Item>
                 </Col>
-                <Col span={12}>
-                  <Form.Item label="Extra (Hours)" name="extra">
-                    <StyledInputNumber min={0} onChange={onChangeDays} />
+                <Col span={8}>
+                  <Form.Item
+                    label={
+                      <Tooltip title="Extra Hours">
+                        Extra <QuestionCircleOutlined />
+                      </Tooltip>
+                    }
+                    name="extra"
+                  >
+                    <StyledInputNumber
+                      min={0}
+                      onChange={(num) => onChangeDay(num, 'extra')}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={8}>
+                  <Form.Item label="Holiday" name="publicHoliday">
+                    <StyledInputNumber
+                      min={0}
+                      onChange={onChagePublicHoliday}
+                    />
                   </Form.Item>
                 </Col>
               </Row>
@@ -225,7 +294,12 @@ const App = () => {
                 </Col>
                 <Col span={12}>
                   <StyledStatistic
-                    title="Total Income (THB)"
+                    // title="Total Income (THB)"
+                    title={
+                      <Tooltip title="Salary + Certificate + OT in THB">
+                        Total Income <QuestionCircleOutlined />
+                      </Tooltip>
+                    }
                     value={totalIncome}
                   />
                 </Col>
