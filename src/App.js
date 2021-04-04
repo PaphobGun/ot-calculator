@@ -121,8 +121,6 @@ const App = () => {
       extra,
     } = formValues;
 
-    console.log(formValues);
-
     const [w7amHour] = calculateHourAndOT(n7am, 'day');
     const [w8amHour] = calculateHourAndOT(n8am, 'day');
     const [w9amHour] = calculateHourAndOT(n9am, 'day');
