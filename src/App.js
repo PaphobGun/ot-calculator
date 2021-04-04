@@ -17,7 +17,7 @@ import styled from 'styled-components';
 const certificate = 7000;
 
 const initialValues = {
-  salary: 25000,
+  salary: 0,
   publicHoliday: 0,
 };
 
