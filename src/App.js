@@ -14,11 +14,12 @@ import {
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
 
+const publicHolidays = [1, 1, 0, 4, 2, 1, 2, 1, 0, 1, 0, 2];
+
 const certificate = 7000;
 
 const initialValues = {
   salary: 25000,
-  publicHoliday: 0,
 };
 
 const getOTIncome = (salary, OTHour) => {
@@ -67,17 +68,11 @@ const App = () => {
   const [totalIncome, setTotalIncome] = useState(0);
   const [dutyHours, setDutyHours] = useState(0);
   const [salary, setSalary] = useState(initialValues.salary);
-  const [publicHoliday, setPublicHoliday] = useState(
-    initialValues.publicHoliday
-  );
+  const [publicHoliday, setPublicHoliday] = useState(0);
   const [formValues, setFormValues] = useState({});
 
   const onChangeSalary = (salaryInput) => {
     setSalary(!salaryInput ? 0 : salaryInput);
-  };
-
-  const onChagePublicHoliday = (pub) => {
-    setPublicHoliday(!pub ? 0 : pub);
   };
 
   useEffect(() => {
@@ -95,6 +90,8 @@ const App = () => {
   const onChangeMonth = (momentObj) => {
     if (!momentObj) return;
 
+    setPublicHoliday(publicHolidays[momentObj.month()]);
+
     const numOfSaturdays = getAmountOfWeekDaysInMonth(momentObj, 6);
     const numOfSundays = getAmountOfWeekDaysInMonth(momentObj, 0);
     const numOfBusinessDays =
@@ -110,21 +107,11 @@ const App = () => {
   };
 
   useEffect(() => {
-    const {
-      n7am,
-      n8am,
-      n9am,
-      ot7am,
-      ot8am,
-      ot9am,
-      nightShift,
-      extra,
-    } = formValues;
+    const { n7am, n8am, n10am, ot8am, ot9am, nightShift, extra } = formValues;
 
     const [w7amHour] = calculateHourAndOT(n7am, 'day');
     const [w8amHour] = calculateHourAndOT(n8am, 'day');
-    const [w9amHour] = calculateHourAndOT(n9am, 'day');
-    const [w7amOTHour, ot7amHour] = calculateHourAndOT(ot7am, 'dayWithOT');
+    const [w10amHour] = calculateHourAndOT(n10am, 'day');
     const [w8amOTHour, ot8amHour] = calculateHourAndOT(ot8am, 'dayWithOT');
     const [w9amOTHour, ot9amHour] = calculateHourAndOT(ot9am, 'dayWithOT');
     const [nightHour, nightOT] = calculateHourAndOT(nightShift, 'night');
@@ -133,9 +120,7 @@ const App = () => {
     const totalHours =
       w7amHour +
       w8amHour +
-      w9amHour +
-      w7amOTHour +
-      ot7amHour +
+      w10amHour +
       w8amOTHour +
       ot8amHour +
       w9amOTHour +
@@ -147,7 +132,9 @@ const App = () => {
 
     setTotalHour(totalHours);
 
-    setOtHour(totalHours - dutyHours);
+    const abOTHour = totalHours - dutyHours < 0 ? 0 : totalHours - dutyHours;
+
+    setOtHour(abOTHour);
   }, [formValues, dutyHours]);
 
   return (
@@ -205,23 +192,15 @@ const App = () => {
                   </Form.Item>
                 </Col>
                 <Col span={8}>
-                  <Form.Item label="9-18" name="n9am">
+                  <Form.Item label="10-19" name="n10am">
                     <StyledInputNumber
                       min={0}
-                      onChange={(num) => onChangeDay(num, 'n9am')}
+                      onChange={(num) => onChangeDay(num, 'n10am')}
                     />
                   </Form.Item>
                 </Col>
               </Row>
               <Row gutter={8}>
-                <Col span={8}>
-                  <Form.Item label="7-19" name="ot7am">
-                    <StyledInputNumber
-                      min={0}
-                      onChange={(num) => onChangeDay(num, 'ot7am')}
-                    />
-                  </Form.Item>
-                </Col>
                 <Col span={8}>
                   <Form.Item label="8-20" name="ot8am">
                     <StyledInputNumber
@@ -238,8 +217,6 @@ const App = () => {
                     />
                   </Form.Item>
                 </Col>
-              </Row>
-              <Row gutter={8}>
                 <Col span={8}>
                   <Form.Item label="Night Shift" name="nightShift">
                     <StyledInputNumber
@@ -248,26 +225,13 @@ const App = () => {
                     />
                   </Form.Item>
                 </Col>
-                <Col span={8}>
-                  <Form.Item
-                    label={
-                      <Tooltip title="Extra Hours">
-                        Extra <QuestionCircleOutlined />
-                      </Tooltip>
-                    }
-                    name="extra"
-                  >
+              </Row>
+              <Row gutter={8}>
+                <Col span={12}>
+                  <Form.Item label="Extra Hours" name="extra">
                     <StyledInputNumber
                       min={0}
                       onChange={(num) => onChangeDay(num, 'extra')}
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item label="Holiday" name="publicHoliday">
-                    <StyledInputNumber
-                      min={0}
-                      onChange={onChagePublicHoliday}
                     />
                   </Form.Item>
                 </Col>
@@ -288,13 +252,36 @@ const App = () => {
               </Row>
               <Row gutter={8} className="summary-row">
                 <Col span={12}>
-                  <StyledStatistic title="OT (THB)" value={OTIncome} />
+                  <StyledStatistic
+                    title={
+                      <Tooltip
+                        title={
+                          <Card>
+                            <div>({salary}/240) * 1.5</div>
+                          </Card>
+                        }
+                      >
+                        OT Hours <QuestionCircleOutlined />
+                      </Tooltip>
+                    }
+                    value={OTIncome}
+                  />
                 </Col>
                 <Col span={12}>
                   <StyledStatistic
                     // title="Total Income (THB)"
                     title={
-                      <Tooltip title="Salary + Certificate + OT in THB">
+                      <Tooltip
+                        title={
+                          <Card>
+                            <div>Salary + Cerificate + OT</div>
+                            <div>
+                              {salary} + {certificate} + {OTIncome} ={' '}
+                              {totalIncome} THB
+                            </div>
+                          </Card>
+                        }
+                      >
                         Total Income <QuestionCircleOutlined />
                       </Tooltip>
                     }
