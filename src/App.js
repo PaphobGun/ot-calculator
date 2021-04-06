@@ -16,7 +16,7 @@ import styled from 'styled-components';
 
 const publicHolidays = [1, 1, 0, 4, 2, 1, 2, 1, 0, 1, 0, 2];
 
-const certificate = 7000;
+const licence = 7000;
 
 const initialValues = {
   salary: 25000,
@@ -76,7 +76,7 @@ const App = () => {
   };
 
   useEffect(() => {
-    setTotalIncome(certificate + OTIncome + salary);
+    setTotalIncome(licence + OTIncome + salary);
   }, [OTIncome, salary]);
 
   useEffect(() => {
@@ -261,7 +261,7 @@ const App = () => {
                           </Card>
                         }
                       >
-                        OT Hours <QuestionCircleOutlined />
+                        OT THB <QuestionCircleOutlined />
                       </Tooltip>
                     }
                     value={OTIncome}
@@ -274,10 +274,10 @@ const App = () => {
                       <Tooltip
                         title={
                           <Card>
-                            <div>Salary + Cerificate + OT</div>
+                            <div>Salary + Licence + OT</div>
                             <div>
-                              {salary} + {certificate} + {OTIncome} ={' '}
-                              {totalIncome} THB
+                              {salary} + {licence} + {OTIncome} = {totalIncome}{' '}
+                              THB
                             </div>
                           </Card>
                         }
