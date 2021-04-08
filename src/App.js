@@ -76,8 +76,10 @@ const App = () => {
   };
 
   useEffect(() => {
-    setTotalIncome(licence + OTIncome + salary);
-  }, [OTIncome, salary]);
+    const nightShiftFee = (formValues.nightShift || 0) * 400;
+
+    setTotalIncome(licence + OTIncome + salary + nightShiftFee);
+  }, [OTIncome, salary, formValues.nightShift]);
 
   useEffect(() => {
     setDutyHours((businessDays - getOrZero(publicHoliday)) * 8);
@@ -257,7 +259,9 @@ const App = () => {
                       <Tooltip
                         title={
                           <Card>
-                            <div>({salary}/240) * 1.5</div>
+                            <div>
+                              ({salary}/240) * 1.5 * {otHour}
+                            </div>
                           </Card>
                         }
                       >
@@ -274,10 +278,10 @@ const App = () => {
                       <Tooltip
                         title={
                           <Card>
-                            <div>Salary + Licence + OT</div>
+                            <div>Salary + Licence + OT + night shift</div>
                             <div>
-                              {salary} + {licence} + {OTIncome} = {totalIncome}{' '}
-                              THB
+                              {salary} + {licence} + {OTIncome} +{' '}
+                              {formValues.nightShift * 400}= {totalIncome} THB
                             </div>
                           </Card>
                         }
