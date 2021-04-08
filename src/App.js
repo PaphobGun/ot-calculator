@@ -281,7 +281,8 @@ const App = () => {
                             <div>Salary + Licence + OT + night shift</div>
                             <div>
                               {salary} + {licence} + {OTIncome} +{' '}
-                              {formValues.nightShift * 400}= {totalIncome} THB
+                              {(formValues.nightShift || 0) * 400}={' '}
+                              {totalIncome} THB
                             </div>
                           </Card>
                         }
