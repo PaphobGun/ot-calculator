@@ -16,8 +16,6 @@ import styled from 'styled-components';
 
 const publicHolidays = [1, 1, 0, 4, 2, 1, 2, 1, 0, 1, 0, 2];
 
-const licence = 7000;
-
 const initialValues = {
   salary: 0,
 };
@@ -77,9 +75,10 @@ const App = () => {
 
   useEffect(() => {
     const nightShiftFee = (formValues.nightShift || 0) * 400;
+    const licence = formValues.licence || 0;
 
-    setTotalIncome(licence + OTIncome + salary + nightShiftFee);
-  }, [OTIncome, salary, formValues.nightShift]);
+    setTotalIncome(OTIncome + salary + nightShiftFee + licence);
+  }, [OTIncome, salary, formValues.nightShift, formValues.licence]);
 
   useEffect(() => {
     setDutyHours((businessDays - getOrZero(publicHoliday)) * 8);
@@ -237,6 +236,14 @@ const App = () => {
                     />
                   </Form.Item>
                 </Col>
+                <Col span={12}>
+                  <Form.Item label="Licence" name="licence">
+                    <StyledInputNumber
+                      min={0}
+                      onChange={(num) => onChangeDay(num, 'licence')}
+                    />
+                  </Form.Item>
+                </Col>
               </Row>
               {/* end of region input */}
               <StyledDivider />
@@ -280,8 +287,8 @@ const App = () => {
                           <Card>
                             <div>Salary + Licence + OT + night shift</div>
                             <div>
-                              {salary} + {licence} + {OTIncome} +{' '}
-                              {(formValues.nightShift || 0) * 400}={' '}
+                              {salary} + {formValues.licence || 0} + {OTIncome}{' '}
+                              + {(formValues.nightShift || 0) * 400}={' '}
                               {totalIncome} THB
                             </div>
                           </Card>
