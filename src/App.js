@@ -42,7 +42,7 @@ const calculateHourAndOT = (num, mode) => {
     workingHours = num * 8;
     OTHours = num * 3;
   } else if (mode === 'night') {
-    workingHours = num * 9;
+    workingHours = num * 8;
     OTHours = num * 3;
   } else {
     workingHours = 0;
