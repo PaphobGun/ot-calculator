@@ -33,6 +33,7 @@ const getAmountOfWeekDaysInMonth = (date, weekday) => {
 const calculateHourAndOT = (num, mode) => {
   let workingHours = 0;
   let OTHours = 0;
+  console.log('hello');
 
   if (!num) return [workingHours, OTHours];
 
